@@ -3,7 +3,7 @@ import {
   PerpMarket,
   PerpOrder,
 } from "@blockworks-foundation/mango-client";
-import { I80F48 } from "@blockworks-foundation/mango-client/lib/src/fixednum";
+import { I80F48 } from "@blockworks-foundation/mango-client";
 import { Market, OpenOrders } from "@project-serum/serum";
 import { Order } from "@project-serum/serum/lib/market";
 

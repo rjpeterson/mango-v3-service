@@ -24,6 +24,7 @@ import { Market, Orderbook } from "@project-serum/serum";
 import { Order } from "@project-serum/serum/lib/market";
 import {
   Account,
+  Keypair,
   AccountInfo,
   Commitment,
   Connection,
@@ -44,7 +45,7 @@ class MangoSimpleClient {
     public client: MangoClient,
     public mangoGroupConfig: GroupConfig,
     public mangoGroup: MangoGroup,
-    public owner: Account,
+    public owner: Keypair,
     public mangoAccount: MangoAccount
   ) {
     // refresh things which might get stale over time
@@ -89,9 +90,8 @@ class MangoSimpleClient {
     const privateKeyPath =
       process.env.PRIVATE_KEY_PATH || os.homedir() + "/.config/solana/id.json";
     logger.info(`- loading private key at location ${privateKeyPath}`);
-    const owner = new Account(
-      JSON.parse(fs.readFileSync(privateKeyPath, "utf-8"))
-    );
+    const key = JSON.parse(fs.readFileSync(privateKeyPath, "utf-8"))
+    const owner = Keypair.fromSecretKey(Uint8Array.from(key));
 
     let mangoAccount;
 
@@ -104,6 +104,7 @@ class MangoSimpleClient {
         mangoGroupConfig.serumProgramId
       );
     } else {
+      logger.info(`owner info: ${JSON.stringify(owner)}`)
       logger.info(
         `- fetching mango accounts for ${owner.publicKey.toBase58()}`
       );
@@ -732,7 +733,7 @@ class MangoSimpleClient {
   private buildCancelPerpOrderInstruction(
     mangoGroup: MangoGroup,
     mangoAccount: MangoAccount,
-    owner: Account,
+    owner: Keypair,
     perpMarket: PerpMarket,
     order: PerpOrder,
     invalidIdOk = false // Don't throw error if order is invalid
@@ -757,7 +758,7 @@ class MangoSimpleClient {
   private async buildCancelSpotOrderTransaction(
     mangoGroup: MangoGroup,
     mangoAccount: MangoAccount,
-    owner: Account,
+    owner: Keypair,
     spotMarket: Market,
     order: Order
   ): Promise<Transaction> {
