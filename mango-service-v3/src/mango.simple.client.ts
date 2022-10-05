@@ -24,6 +24,7 @@ import { Market, Orderbook } from "@project-serum/serum";
 import { Order } from "@project-serum/serum/lib/market";
 import {
   Account,
+  Keypair,
   AccountInfo,
   Commitment,
   Connection,
@@ -44,7 +45,7 @@ class MangoSimpleClient {
     public client: MangoClient,
     public mangoGroupConfig: GroupConfig,
     public mangoGroup: MangoGroup,
-    public owner: Account,
+    public owner: Keypair,
     public mangoAccount: MangoAccount
   ) {
     // refresh things which might get stale over time
@@ -89,9 +90,8 @@ class MangoSimpleClient {
     const privateKeyPath =
       process.env.PRIVATE_KEY_PATH || os.homedir() + "/.config/solana/id.json";
     logger.info(`- loading private key at location ${privateKeyPath}`);
-    const owner = new Account(
-      JSON.parse(fs.readFileSync(privateKeyPath, "utf-8"))
-    );
+    const key = JSON.parse(fs.readFileSync(privateKeyPath, "utf-8"))
+    const owner = Keypair.fromSecretKey(Uint8Array.from(key));
 
     let mangoAccount;
 
@@ -104,6 +104,7 @@ class MangoSimpleClient {
         mangoGroupConfig.serumProgramId
       );
     } else {
+      logger.info(`owner info: ${JSON.stringify(owner)}`)
       logger.info(
         `- fetching mango accounts for ${owner.publicKey.toBase58()}`
       );
@@ -391,9 +392,11 @@ class MangoSimpleClient {
     side: "buy" | "sell",
     quantity: number,
     price?: number,
-    orderType: "ioc" | "postOnly" | "market" | "limit" = "limit",
+    orderType: 
+      // "postOnlySlide" | 
+      "ioc" | "postOnly" | "market" | "limit" = "limit",
     clientOrderId?: number
-  ): Promise<TransactionSignature> {
+  ): Promise<TransactionSignature | TransactionSignature[]> {
     if (market.includes("PERP")) {
       const perpMarketConfig = getMarketByBaseSymbolAndKind(
         this.mangoGroupConfig,
@@ -409,17 +412,19 @@ class MangoSimpleClient {
       // TODO: this is a workaround, mango-v3 has a assertion for price>0 for all order types
       // this will be removed soon hopefully
       price = orderType !== "market" ? price : 1;
-      return await this.client.placePerpOrder(
+      return await this.client.placePerpOrder2(
         this.mangoGroup,
         this.mangoAccount,
-        this.mangoGroup.mangoCache,
+        // this.mangoGroup.mangoCache,
         perpMarket,
         this.owner,
         side,
         price,
         quantity,
-        orderType,
-        clientOrderId
+        {
+          orderType,
+          clientOrderId
+        }
       );
     } else {
       // serum doesn't really support market orders, calculate a pseudo market price
@@ -439,16 +444,18 @@ class MangoSimpleClient {
         undefined,
         this.mangoGroupConfig.serumProgramId
       );
-      return await this.client.placeSpotOrder(
+      return await this.client.placeSpotOrder2(
         this.mangoGroup,
         this.mangoAccount,
-        this.mangoGroup.mangoCache,
+        // this.mangoGroup.mangoCache,
         spotMarket,
         this.owner,
         side,
         price,
         quantity,
-        orderType === "market" ? "limit" : orderType,
+        (orderType === "market" 
+          // || orderType == "postOnlySlide"
+        ) ? "limit" : orderType,
         new BN(clientOrderId)
       );
     }
@@ -732,7 +739,7 @@ class MangoSimpleClient {
   private buildCancelPerpOrderInstruction(
     mangoGroup: MangoGroup,
     mangoAccount: MangoAccount,
-    owner: Account,
+    owner: Keypair,
     perpMarket: PerpMarket,
     order: PerpOrder,
     invalidIdOk = false // Don't throw error if order is invalid
@@ -757,7 +764,7 @@ class MangoSimpleClient {
   private async buildCancelSpotOrderTransaction(
     mangoGroup: MangoGroup,
     mangoAccount: MangoAccount,
-    owner: Account,
+    owner: Keypair,
     spotMarket: Market,
     order: Order
   ): Promise<Transaction> {
