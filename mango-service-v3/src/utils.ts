@@ -14,7 +14,8 @@ export async function transactionSize(
   singleTransaction.recentBlockhash = (
     await connection.getRecentBlockhash()
   ).blockhash;
-  singleTransaction.setSigners(owner.publicKey);
+  singleTransaction.feePayer = owner.publicKey
+  // singleTransaction.setSigners(owner.publicKey);
   singleTransaction.sign(this.owner);
   return singleTransaction.serialize().length;
 }

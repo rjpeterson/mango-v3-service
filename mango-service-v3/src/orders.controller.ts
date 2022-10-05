@@ -123,6 +123,8 @@ class OrdersController implements Controller {
           ? "ioc"
           : placeOrderDto.postOnly
           ? "postOnly"
+          // : placeOrderDto.postOnlySlide
+          // ? "postOnlySlide"
           : "limit",
         placeOrderDto.clientId
       )
@@ -365,6 +367,7 @@ interface PlaceOrderDto {
   reduceOnly: boolean;
   ioc: boolean;
   postOnly: boolean;
+  // postOnlySlide: boolean;
   clientId: number;
 }
 
