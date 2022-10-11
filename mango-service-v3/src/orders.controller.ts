@@ -39,6 +39,7 @@ class OrdersController implements Controller {
       body("reduceOnly").isBoolean(),
       body("ioc").isBoolean(),
       body("postOnly").isBoolean(),
+      // body("postOnlySlide").isBoolean(),
       body("clientId").isNumeric(),
       this.placeOrder
     );
@@ -258,6 +259,7 @@ class OrdersController implements Controller {
           reduceOnly: undefined,
           ioc: undefined,
           postOnly: undefined,
+          // postOnlySlide: undefined,
           clientId:
             perpOrder.clientId && perpOrder.clientId.toString() !== "0"
               ? perpOrder.clientId.toString()
@@ -282,6 +284,7 @@ class OrdersController implements Controller {
         reduceOnly: undefined,
         ioc: undefined,
         postOnly: undefined,
+        // postOnlySlide: undefined,
         clientId:
           spotOrder.clientId && spotOrder.clientId.toString() !== "0"
             ? spotOrder.clientId.toString()
@@ -342,6 +345,7 @@ interface OrderDto {
   reduceOnly: boolean;
   ioc: boolean;
   postOnly: boolean;
+  // postOnlySlide: boolean;
   clientId: null;
 }
 
@@ -388,6 +392,7 @@ interface PlaceOrderResponseDto {
     reduceOnly: boolean;
     ioc: boolean;
     postOnly: boolean;
+    // postOnlySlide: boolean;
     clientId: string;
   };
 }

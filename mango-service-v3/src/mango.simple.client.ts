@@ -38,6 +38,8 @@ import fetch from "node-fetch";
 import os from "os";
 import { OrderInfo } from "types";
 import { logger, zipDict } from "./utils";
+import dotenv from "dotenv";
+dotenv.config();
 
 class MangoSimpleClient {
   constructor(
@@ -77,9 +79,15 @@ class MangoSimpleClient {
     );
 
     logger.info(`- fetching mango group`);
-    const mangoGroup = await mangoClient.getMangoGroup(
-      mangoGroupConfig.publicKey
-    );
+    let mangoGroup
+    try {
+      mangoGroup = await mangoClient.getMangoGroup(
+        mangoGroupConfig.publicKey
+      );
+    } catch (error) {
+      throw new Error('could not get mangoGroup')
+    }
+
 
     logger.info(`- loading root banks`);
     await mangoGroup.loadRootBanks(connection);
@@ -94,7 +102,6 @@ class MangoSimpleClient {
     const owner = Keypair.fromSecretKey(Uint8Array.from(key));
 
     let mangoAccount;
-
     if (process.env.MANGO_ACCOUNT) {
       logger.info(
         `- MANGO_ACCOUNT explicitly specified, fetching mango account ${process.env.MANGO_ACCOUNT}`
@@ -837,7 +844,7 @@ class MangoSimpleClient {
     mangoGroupConfig: GroupConfig,
     mangoAccount: MangoAccount
   ) {
-    mangoAccount.loadOpenOrders(connection, mangoGroupConfig.serumProgramId);
+    mangoAccount.reload(connection, mangoGroupConfig.serumProgramId);
   }
 }
 
