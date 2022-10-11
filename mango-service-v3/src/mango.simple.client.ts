@@ -38,6 +38,8 @@ import fetch from "node-fetch";
 import os from "os";
 import { OrderInfo } from "types";
 import { logger, zipDict } from "./utils";
+import dotenv from "dotenv";
+dotenv.config();
 
 class MangoSimpleClient {
   constructor(
@@ -91,8 +93,11 @@ class MangoSimpleClient {
       process.env.PRIVATE_KEY_PATH || os.homedir() + "/.config/solana/id.json";
     logger.info(`- loading private key at location ${privateKeyPath}`);
     const key = JSON.parse(fs.readFileSync(privateKeyPath, "utf-8"))
+    // debugger;
     const owner = Keypair.fromSecretKey(Uint8Array.from(key));
 
+    const mangoAccountPK = new PublicKey(process.env.MANGO_ACCOUNT)
+    const dexProgramID = mangoGroupConfig.serumProgramId
     let mangoAccount;
 
     if (process.env.MANGO_ACCOUNT) {
@@ -100,8 +105,8 @@ class MangoSimpleClient {
         `- MANGO_ACCOUNT explicitly specified, fetching mango account ${process.env.MANGO_ACCOUNT}`
       );
       mangoAccount = await mangoClient.getMangoAccount(
-        new PublicKey(process.env.MANGO_ACCOUNT),
-        mangoGroupConfig.serumProgramId
+        mangoAccountPK,
+        dexProgramID
       );
     } else {
       logger.info(`owner info: ${JSON.stringify(owner)}`)
@@ -837,7 +842,7 @@ class MangoSimpleClient {
     mangoGroupConfig: GroupConfig,
     mangoAccount: MangoAccount
   ) {
-    mangoAccount.loadOpenOrders(connection, mangoGroupConfig.serumProgramId);
+    mangoAccount.reload(connection, mangoGroupConfig.serumProgramId);
   }
 }
 
