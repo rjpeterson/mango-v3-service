@@ -79,9 +79,15 @@ class MangoSimpleClient {
     );
 
     logger.info(`- fetching mango group`);
-    const mangoGroup = await mangoClient.getMangoGroup(
-      mangoGroupConfig.publicKey
-    );
+    let mangoGroup
+    try {
+      mangoGroup = await mangoClient.getMangoGroup(
+        mangoGroupConfig.publicKey
+      );
+    } catch (error) {
+      throw new Error('could not get mangoGroup')
+    }
+
 
     logger.info(`- loading root banks`);
     await mangoGroup.loadRootBanks(connection);
