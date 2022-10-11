@@ -11,8 +11,9 @@
   },
   "scripts": {
     "build": "tsc",
-    "dev": "nodemon --exec \"node --inspect=0.0.0.0:9229 -r ts-node/register ./src/server.ts\"",
-    "debug": "",
+    "start": "node dist/server.js",
+    "dev": "nodemon --exec \"node -r ts-node/register ./src/server.ts\"",
+    "debug": "nodemon --exec \"node --inspect=0.0.0.0:9229 -r ts-node/register ./src/server.ts\"",
     "lint": "tslint -p tsconfig.json -c tslint.json",
     "test": "ts-mocha test/test.ts"
   },

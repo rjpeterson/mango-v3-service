@@ -93,20 +93,16 @@ class MangoSimpleClient {
       process.env.PRIVATE_KEY_PATH || os.homedir() + "/.config/solana/id.json";
     logger.info(`- loading private key at location ${privateKeyPath}`);
     const key = JSON.parse(fs.readFileSync(privateKeyPath, "utf-8"))
-    // debugger;
     const owner = Keypair.fromSecretKey(Uint8Array.from(key));
 
-    const mangoAccountPK = new PublicKey(process.env.MANGO_ACCOUNT)
-    const dexProgramID = mangoGroupConfig.serumProgramId
     let mangoAccount;
-
     if (process.env.MANGO_ACCOUNT) {
       logger.info(
         `- MANGO_ACCOUNT explicitly specified, fetching mango account ${process.env.MANGO_ACCOUNT}`
       );
       mangoAccount = await mangoClient.getMangoAccount(
-        mangoAccountPK,
-        dexProgramID
+        new PublicKey(process.env.MANGO_ACCOUNT),
+        mangoGroupConfig.serumProgramId
       );
     } else {
       logger.info(`owner info: ${JSON.stringify(owner)}`)
